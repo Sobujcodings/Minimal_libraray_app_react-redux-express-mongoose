@@ -10,6 +10,8 @@ import RenderDialog from "./RenderDialog";
 import RenderForm from "./RenderForm";
 import RenderTableBody from "./RenderTableBody";
 import RenderBorrowForm from "./RenderBorrowForm";
+import { Button } from "@/components/ui/button";
+import { Link, useNavigate } from "react-router-dom";
 type RenderTableProps = React.HTMLAttributes<HTMLDivElement>;
 
 export default function RenderTable({
@@ -18,6 +20,7 @@ export default function RenderTable({
   setOpenForm,
   className,
   form,
+  handleAddBooks,
 }: RenderTableProps) {
   // delete functinality
   const [showDialog, setShowDialog] = useState(false);
@@ -27,21 +30,11 @@ export default function RenderTable({
   const [showBorrowBook, setshowBorrowBook] = useState(false);
   const [selectedBorrowBook, setSelectedBorrowBook] = useState();
 
+  const navigate = useNavigate();
+
   // usedelete book hook to send data to  that baseApi to delete it
   const [deletedBook, { data: deletedbookData, isError, isLoading }] =
     useDeleteBookMutation();
-
-  // usedelete book hook to send data to  that baseApi to delete it
-  const [
-    createBooks,
-    { data: createdBookData, isError: createdError, isLoading: createdLoading },
-  ] = useCreateBooksMutation();
-
-  // useUpdate hook
-  const [
-    updatedBooks,
-    { data: updatedBookData, isError: updatedError, isLoading: updatedLoading },
-  ] = useUpdateBookMutation();
 
   // borrow create hook
   const [BorrowBook, { data: borrowedBookData }] = useBorrowBookMutation();
@@ -51,24 +44,6 @@ export default function RenderTable({
     console.log("id found while clicking on the delete", id);
     setShowDialog(!showDialog);
     setSelectedID(id);
-  };
-
-  // data na dile/thakle error/toast show korabe !!!important
-  // post & update book
-  const onSubmit = (data) => {
-    if (formData) {
-      console.log("updated data", data);
-      updatedBooks({ id: data._id, updatedBookData: data });
-      setOpenForm(false);
-      form.reset();
-    } else {
-      console.log("post data", data);
-      createBooks(data);
-      console.log("createdData", createdBookData?.message);
-      console.log("createdError", createdError);
-      setOpenForm(false);
-      form.reset();
-    }
   };
 
   // for update if edit is clicked form will be replaced by edited data ottherwise reset
@@ -99,8 +74,6 @@ export default function RenderTable({
 
   // handle korte hobe jate input faka diye submit na hoy warning dekhabo to fill the form !!important
   const onSubmitBorrow = async (data) => {
-    // console.log("borrow", data);
-    // console.log("selectedBorrow", selectedBorrowBook);
     if (data.quantity > selectedBorrowBook.copies) {
       alert(
         `Quantity cannot exceed available copies, you have ${selectedBorrowBook.copies} copy only`
@@ -117,6 +90,7 @@ export default function RenderTable({
       const response = await BorrowBook(BorrowBookRequest).unwrap();
       console.log("Success message:", response.message);
       setshowBorrowBook(false);
+      navigate("/borrow-summary");
       // toast.success(response.message || "Book borrowed successfully!");
     } catch (error) {
       console.error("Error borrowing book:", error);
@@ -124,7 +98,6 @@ export default function RenderTable({
     }
   };
 
-  
   return (
     <div className={className}>
       <RenderTableBody
@@ -140,20 +113,20 @@ export default function RenderTable({
         deletedBook={deletedBook}
         id={selectedID}
       />
-
+      {/* 
       <RenderForm
         OpenForm={OpenForm}
         setOpenForm={setOpenForm}
-        onSubmit={onSubmit}
+        // onSubmit={onSubmit}
         defaultValues={formData}
         form={form}
-      />
+      /> */}
 
-      <RenderBorrowForm
+      {/* <RenderBorrowForm
         showBorrowBook={showBorrowBook}
         setshowBorrowBook={setshowBorrowBook}
         onSubmitBorrow={onSubmitBorrow}
-      />
+      /> */}
     </div>
   );
 }

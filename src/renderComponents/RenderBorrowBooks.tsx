@@ -9,10 +9,10 @@ import {
 
 export default function RenderBorrowBooks({ Borrowbooks }) {
   return (
-    <div>
+    <div className="mx-5 my-5">
       <Table className="">
         <TableHeader>
-          <TableRow>
+          <TableRow className="bg-gray-100 border">
             <TableHead className="border text-center">S.N</TableHead>
             <TableHead className="border text-center">Title</TableHead>
             <TableHead className="border text-center">ISBN</TableHead>
@@ -22,7 +22,7 @@ export default function RenderBorrowBooks({ Borrowbooks }) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {Borrowbooks.data.map((borrowBook, index) => (
+          {Borrowbooks?.data.map((borrowBook, index) => (
             <TableRow key={borrowBook._id} className="text-center">
               <TableCell className="font-medium border text-center">
                 {index + 1}

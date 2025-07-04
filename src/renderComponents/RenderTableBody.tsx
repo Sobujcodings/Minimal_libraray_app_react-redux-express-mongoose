@@ -8,17 +8,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Link, useNavigate } from "react-router-dom";
 
-export default function RenderTableBody({
-  books,
-  handleUpdata,
-  handleDeleteBook,
-  handleBorrow
-}) {
+export default function RenderTableBody({ books, handleDeleteBook }) {
+  const navigate = useNavigate();
   return (
     <Table className="">
       <TableHeader>
-        <TableRow>
+        <TableRow className="bg-gray-100 border">
           <TableHead className="border text-center">S.N</TableHead>
           <TableHead className="w-[100px] border text-center">Title</TableHead>
           <TableHead className="border text-center">Author</TableHead>
@@ -51,11 +48,28 @@ export default function RenderTableBody({
             <TableCell className="border text-center">{book.copies}</TableCell>
             <TableCell className="border">
               <div className="flex flex-col gap-y-2 text-center p-2">
-                <Button onClick={() => handleUpdata(book)}>EDIT</Button>
+                {/* onClick={() => handleUpdata(book)} */}
+                <Button>
+                  <Link to={`books/${book._id}`}>View Details</Link>
+                </Button>
+                <Button
+                  onClick={() =>
+                    navigate(`edit-book/${book._id}`, { state: { book } })
+                  }
+                >
+                  EDIT
+                </Button>
                 <Button onClick={() => handleDeleteBook(book._id)}>
                   DELETE
                 </Button>
-                <Button onClick={()=> handleBorrow(book)}>BORROW</Button>
+                <Button
+                  disabled={book.copies ? 0 : true}
+                  onClick={() =>
+                    navigate(`/borrow/${book._id}`, { state: { book } })
+                  }
+                >
+                  BORROW
+                </Button>
               </div>
             </TableCell>
           </TableRow>
