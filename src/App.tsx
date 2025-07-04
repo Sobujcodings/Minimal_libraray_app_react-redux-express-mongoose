@@ -1,34 +1,67 @@
-import { Link } from "lucide-react";
 import "./App.css";
-import { useGetBooksQuery } from "./Redux/api/baseApi";
+import {
+  useGetBooksQuery,
+  useGetBorrowedBooksQuery,
+} from "./Redux/api/baseApi";
 import RenderTable from "./renderComponents/renderTable";
+import { useState } from "react";
+import { Button } from "./components/ui/button";
+import { useForm } from "react-hook-form";
+import { Link } from "react-router-dom";
+import RenderBorrowBooks from "./renderComponents/RenderBorrowBooks";
 
 function App() {
   // fix cors error of beckend and deploy again -> see frontend output of that error
   // another table for summary
 
+  const form = useForm({
+    shouldUnregister: true,
+  });
 
-  // GET books data from useGetBooksQuery hook of baseApi
+  const [OpenForm, setOpenForm] = useState(false);
+
+  // GET books, borrow books data from hook of baseApi
   const { data: booksData, isError, isLoading } = useGetBooksQuery(undefined);
-  // console.log("data", booksData);
+  const { data: BorrowBooksData } = useGetBorrowedBooksQuery(undefined);
 
-  
+  const handleAddBooks = () => {
+    setOpenForm(!OpenForm);
+  };
+
   return (
     <>
-    {/* navbar */}
+      {/* navbar */}
       <div className="flex justify-evenly my-5">
-        <ul className="text-left">Minimal Library Management System 📚</ul>
-        <ul>All books</ul>
-        <ul>Borrow Summary</ul>
-        <ul>Add Books</ul>
+        <ul className="text-left">
+          <Link to="/">Minimal Library Management System 📚</Link>
+        </ul>
+        <ul>
+          <Link to="/all-books">All books</Link>
+        </ul>
+        <Link to="/borrow-summary">Borrow Summary</Link>
+        <ul>
+          <Button onClick={() => handleAddBooks()}>Add Book</Button>
+        </ul>
       </div>
 
       <div>
         {!isLoading && (
-          <RenderTable books={booksData} className="mx-5"></RenderTable>
+          <RenderTable
+            books={booksData}
+            OpenForm={OpenForm}
+            setOpenForm={setOpenForm}
+            className="mx-5"
+            form={form}
+          ></RenderTable>
         )}
       </div>
 
+      {/* <div>
+        <RenderBorrowBooks
+          Borrowbooks={BorrowBooksData}
+          className="mx-5"
+        ></RenderBorrowBooks>
+      </div> */}
     </>
   );
 }

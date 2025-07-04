@@ -1,106 +1,139 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { useDeleteBookMutation } from "@/Redux/api/baseApi";
+  useBorrowBookMutation,
+  useCreateBooksMutation,
+  useDeleteBookMutation,
+  useUpdateBookMutation,
+} from "@/Redux/api/baseApi";
+
 import RenderDialog from "./RenderDialog";
-
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-
+import RenderForm from "./RenderForm";
+import RenderTableBody from "./RenderTableBody";
+import RenderBorrowForm from "./RenderBorrowForm";
 type RenderTableProps = React.HTMLAttributes<HTMLDivElement>;
 
-export default function RenderTable({ className, ...props }: RenderTableProps) {
-  // console.log("props", props);
+export default function RenderTable({
+  books,
+  OpenForm,
+  setOpenForm,
+  className,
+  form,
+}: RenderTableProps) {
+  // delete functinality
+  const [showDialog, setShowDialog] = useState(false);
+  const [selectedID, setSelectedID] = useState(false);
+  // updated data
+  const [formData, setformData] = useState(null);
+  const [showBorrowBook, setshowBorrowBook] = useState(false);
+  const [selectedBorrowBook, setSelectedBorrowBook] = useState();
 
   // usedelete book hook to send data to  that baseApi to delete it
   const [deletedBook, { data: deletedbookData, isError, isLoading }] =
     useDeleteBookMutation();
-  // console.log("data", deletedBook, deletedbookData);
 
-  // delete functinality
-  const [showDialog, setShowDialog] = useState(false);
-  const [selectedID, setSelectedID] = useState(false);
+  // usedelete book hook to send data to  that baseApi to delete it
+  const [
+    createBooks,
+    { data: createdBookData, isError: createdError, isLoading: createdLoading },
+  ] = useCreateBooksMutation();
 
+  // useUpdate hook
+  const [
+    updatedBooks,
+    { data: updatedBookData, isError: updatedError, isLoading: updatedLoading },
+  ] = useUpdateBookMutation();
+
+  // borrow create hook
+  const [BorrowBook, { data: borrowedBookData }] = useBorrowBookMutation();
+
+  // delete
   const handleDeleteBook = (id) => {
     console.log("id found while clicking on the delete", id);
     setShowDialog(!showDialog);
     setSelectedID(id);
   };
 
+  // data na dile/thakle error/toast show korabe !!!important
+  // post & update book
+  const onSubmit = (data) => {
+    if (formData) {
+      console.log("updated data", data);
+      updatedBooks({ id: data._id, updatedBookData: data });
+      setOpenForm(false);
+      form.reset();
+    } else {
+      console.log("post data", data);
+      createBooks(data);
+      console.log("createdData", createdBookData?.message);
+      console.log("createdError", createdError);
+      setOpenForm(false);
+      form.reset();
+    }
+  };
 
-  const handleSubmit = (data)=>{
-    console.log("data",data);
-  }
+  // for update if edit is clicked form will be replaced by edited data ottherwise reset
+  useEffect(() => {
+    if (formData) {
+      form.reset(formData);
+    } else {
+      form.reset();
+    }
+  }, [formData]);
 
+  const handleUpdata = (book) => {
+    console.log("updated book", book);
+    setformData(book);
+    setOpenForm(true);
+  };
+
+  // borrow book
+  const handleBorrow = (book) => {
+    console.log("book", book);
+    if (book.copies === 0) {
+      alert("Book is Unavailable");
+      return;
+    }
+    setSelectedBorrowBook(book);
+    setshowBorrowBook(!showBorrowBook);
+  };
+
+  // handle korte hobe jate input faka diye submit na hoy warning dekhabo to fill the form !!important
+  const onSubmitBorrow = async (data) => {
+    // console.log("borrow", data);
+    // console.log("selectedBorrow", selectedBorrowBook);
+    if (data.quantity > selectedBorrowBook.copies) {
+      alert(
+        `Quantity cannot exceed available copies, you have ${selectedBorrowBook.copies} copy only`
+      );
+      return;
+    }
+    const BorrowBookRequest = {
+      book: selectedBorrowBook._id,
+      quantity: Number(data.quantity),
+      dueDate: new Date(data.dueDate).toISOString(),
+    };
+
+    try {
+      const response = await BorrowBook(BorrowBookRequest).unwrap();
+      console.log("Success message:", response.message);
+      setshowBorrowBook(false);
+      // toast.success(response.message || "Book borrowed successfully!");
+    } catch (error) {
+      console.error("Error borrowing book:", error);
+      // toast.error(error?.data?.message || "Failed to borrow book.");
+    }
+  };
+
+  
   return (
-    <div className={className} {...props}>
-      <Table className="">
-        <TableHeader>
-          <TableRow>
-            <TableHead className="border text-center">S.N</TableHead>
-            <TableHead className="w-[100px] border text-center">
-              Title
-            </TableHead>
-            <TableHead className="border text-center">Author</TableHead>
-            <TableHead className="border text-center">Genre</TableHead>
-            <TableHead className="border text-center">Availability</TableHead>
-            <TableHead className="border text-center">Copies</TableHead>
-            <TableHead className="w-[100px] text-center border">
-              Actions
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {props.books.data.map((book, index) => (
-            <TableRow key={book._id} className="text-center">
-              <TableCell className="font-medium border text-center">
-                {index + 1}
-              </TableCell>
-              <TableCell className="font-medium border text-center">
-                {book.title}
-              </TableCell>
-              <TableCell className="border text-center">
-                {book.author}
-              </TableCell>
-              <TableCell className="border text-center">{book.genre}</TableCell>
-              <TableCell className="border text-center">
-                {book.available.toString()}
-              </TableCell>
-              <TableCell className="border text-center">
-                {book.copies}
-              </TableCell>
-              <TableCell className="border">
-                <div className="flex flex-col gap-y-2 text-center p-2">
-                  <Button>EDIT</Button>
-                  <Button onClick={() => handleDeleteBook(book._id)}>
-                    DELETE
-                  </Button>
-                  <Button>BORROW</Button>
-                </div>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+    <div className={className}>
+      <RenderTableBody
+        books={books}
+        handleUpdata={handleUpdata}
+        handleDeleteBook={handleDeleteBook}
+        handleBorrow={handleBorrow}
+      />
 
-
-      {/* Dialog box */}
       <RenderDialog
         open={showDialog}
         onOpenChange={setShowDialog}
@@ -108,29 +141,19 @@ export default function RenderTable({ className, ...props }: RenderTableProps) {
         id={selectedID}
       />
 
+      <RenderForm
+        OpenForm={OpenForm}
+        setOpenForm={setOpenForm}
+        onSubmit={onSubmit}
+        defaultValues={formData}
+        form={form}
+      />
 
-      {/* Add a book form */}
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <FormField
-            control={form.control}
-            name="username"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Username</FormLabel>
-                <FormControl>
-                  <Input placeholder="shadcn" {...field} />
-                </FormControl>
-                <FormDescription>
-                  This is your public display name.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button type="submit">Submit</Button>
-        </form>
-      </Form>
+      <RenderBorrowForm
+        showBorrowBook={showBorrowBook}
+        setshowBorrowBook={setshowBorrowBook}
+        onSubmitBorrow={onSubmitBorrow}
+      />
     </div>
   );
 }
