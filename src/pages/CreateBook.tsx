@@ -14,32 +14,45 @@ import {
   useUpdateBookMutation,
 } from "@/Redux/api/baseApi";
 import { Button } from "@/components/ui/button";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { toast } from "sonner";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function CreateBook() {
   const [formData, setformData] = useState(null);
+  const defaultValue = {
+    title: "",
+    author: "",
+    genre: "",
+    isbn: "",
+    description: "",
+    copies: "",
+  };
   const form = useForm({
-    defaultValues: {
-      title: "",
-      author: "",
-      genre: "",
-      isbn: "",
-      description: "",
-      copies: "",
-    },
+    defaultValues: defaultValue,
   });
   const editId = useParams();
+  const navigate = useNavigate();
 
   const location = useLocation();
   const editedBookData = location.state?.book;
-  console.log(editedBookData);
+  // console.log(editedBookData);
 
   useEffect(() => {
     if (editedBookData) {
       setformData(editedBookData);
       form.reset(editedBookData);
+    } else {
+      form.reset(defaultValue);
     }
-  }, [editedBookData]);
+  }, [editedBookData, location.pathname]);
 
   const [
     createBooks,
@@ -59,19 +72,38 @@ export default function CreateBook() {
           id: editId.id,
           updatedBookData: data,
         }).unwrap();
-        form.reset();
-        alert(response?.message);
+        form.reset(data);
+        toast("✅ Book Updated successfully", {
+          description: response?.message,
+          action: {
+            label: "Close",
+            onClick: () => console.log("close clicked"),
+          },
+        });
+        navigate("/books");
       } catch (error) {
         console.log(error);
+        toast("❌ Failed to update book", {
+          description: error?.data?.message || "Something went wrong",
+        });
       }
     } else {
       try {
         const response = await createBooks(data).unwrap();
-        alert(response?.message);
+        toast("✅ Book created successfully", {
+          description: response?.message,
+          action: {
+            label: "Close",
+            onClick: () => console.log("close clicked"),
+          },
+        });
+        form.reset();
       } catch (error) {
         console.log(error);
+        toast("❌ Failed to create book", {
+          description: error?.data?.message || "Something went wrong",
+        });
       }
-      form.reset();
     }
   };
 
@@ -89,7 +121,16 @@ export default function CreateBook() {
                 <FormItem>
                   <FormLabel>Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="title" {...field} />
+                    <Input
+                      type="text"
+                      placeholder="title"
+                      {...field}
+                      onKeyDown={(e) => {
+                        if (/\d/.test(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -103,7 +144,16 @@ export default function CreateBook() {
                 <FormItem>
                   <FormLabel>Author</FormLabel>
                   <FormControl>
-                    <Input placeholder="Author" {...field} />
+                    <Input
+                      type="text"
+                      placeholder="Author"
+                      {...field}
+                      onKeyDown={(e) => {
+                        if (/\d/.test(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -117,7 +167,45 @@ export default function CreateBook() {
                 <FormItem>
                   <FormLabel>Genre</FormLabel>
                   <FormControl>
-                    <Input placeholder="Genre" {...field} />
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button
+                          type="button"
+                          className="w-full p-2 border rounded text-left"
+                        >
+                          {field.value || "Select Genre"}
+                        </button>
+                      </DropdownMenuTrigger>
+
+                      <DropdownMenuContent className="w-full">
+                        {[
+                          "FICTION",
+                          "NON_FICTION",
+                          "SCIENCE",
+                          "HISTORY",
+                          "BIOGRAPHY",
+                          "FANTASY",
+                        ].map((genre) => (
+                          <DropdownMenuItem
+                            key={genre}
+                            onSelect={() => field.onChange(genre)}
+                          >
+                            {genre}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+
+                    {/* <Input
+                      type="text"
+                      placeholder="Genre"
+                      {...field}
+                      onKeyDown={(e) => {
+                        if (/\d/.test(e.key)) {
+                          e.preventDefault();
+                        }
+                    />
+                    }} */}
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -131,7 +219,7 @@ export default function CreateBook() {
                 <FormItem>
                   <FormLabel>ISBN</FormLabel>
                   <FormControl>
-                    <Input placeholder="ISBN" {...field} />
+                    <Input type="number" placeholder="ISBN" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -145,7 +233,16 @@ export default function CreateBook() {
                 <FormItem>
                   <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Input placeholder="Description" {...field} />
+                    <Input
+                      type="text"
+                      placeholder="Description"
+                      {...field}
+                      onKeyDown={(e) => {
+                        if (/\d/.test(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -159,7 +256,7 @@ export default function CreateBook() {
                 <FormItem>
                   <FormLabel>Copies</FormLabel>
                   <FormControl>
-                    <Input placeholder="Copies" {...field} />
+                    <Input type="number" placeholder="Copies" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

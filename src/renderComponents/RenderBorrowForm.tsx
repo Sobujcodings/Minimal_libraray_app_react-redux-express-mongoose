@@ -11,6 +11,7 @@ import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useBorrowBookMutation } from "@/Redux/api/baseApi";
+import { toast } from "sonner";
 
 export default function RenderBorrowForm() {
   const form = useForm({
@@ -28,9 +29,7 @@ export default function RenderBorrowForm() {
   // handle korte hobe jate input faka diye submit na hoy warning dekhabo to fill the form !!important
   const onSubmitBorrow = async (data) => {
     if (data.quantity > selectedBorrowBook.copies) {
-      alert(
-        `Quantity cannot exceed available copies, you have ${selectedBorrowBook.copies} copy only`
-      );
+      toast("❌ Quantity cannot exceed available copies");
       return;
     }
     const BorrowBookRequest = {
@@ -42,11 +41,19 @@ export default function RenderBorrowForm() {
     try {
       const response = await BorrowBook(BorrowBookRequest).unwrap();
       console.log("Success message:", response.message);
+      toast("✅ Book borrowed successfully", {
+        description: response.message,
+        action: {
+          label: "Close",
+          onClick: () => console.log("close clicked"),
+        },
+      });
       navigate("/borrow-summary");
-      // toast.success(response.message || "Book borrowed successfully!");
     } catch (error) {
       console.error("Error borrowing book:", error);
-      // toast.error(error?.data?.message || "Failed to borrow book.");
+      toast("❌ Failed to borrow book", {
+        description: error?.message || "Something went wrong",
+      });
     }
   };
 
@@ -61,6 +68,7 @@ export default function RenderBorrowForm() {
           <FormField
             control={form.control}
             name="quantity"
+            rules={{ required: "quantiry is required" }}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Quantity</FormLabel>
@@ -74,6 +82,7 @@ export default function RenderBorrowForm() {
           <FormField
             control={form.control}
             name="dueDate"
+            rules={{ required: "dueDate is required" }}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>DueDate</FormLabel>

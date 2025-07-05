@@ -48,13 +48,12 @@ export default function RenderTableBody({ books, handleDeleteBook }) {
             <TableCell className="border text-center">{book.copies}</TableCell>
             <TableCell className="border">
               <div className="flex flex-col gap-y-2 text-center p-2">
-                {/* onClick={() => handleUpdata(book)} */}
                 <Button>
-                  <Link to={`books/${book._id}`}>View Details</Link>
+                  <Link to={`/books/${book._id}`}>View Details</Link>
                 </Button>
                 <Button
                   onClick={() =>
-                    navigate(`edit-book/${book._id}`, { state: { book } })
+                    navigate(`/edit-book/${book._id}`, { state: { book } })
                   }
                 >
                   EDIT

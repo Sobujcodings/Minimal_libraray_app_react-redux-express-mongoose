@@ -2,7 +2,6 @@ import { useGetBooksQuery } from "@/Redux/api/baseApi";
 import RenderTable from "@/renderComponents/renderTable";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useOutletContext } from "react-router";
 
 export default function BooksTable() {
   const form = useForm({
