@@ -1,5 +1,3 @@
-import React from "react";
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,20 +9,21 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-// ✅ Define prop types
+// definining prop types
 interface RenderDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  deletedBook: (id: string) => void;
+  handleDelete: (id: string) => void;
   id: string;
 }
 
 export default function RenderDialog({
   open,
   onOpenChange,
-  deletedBook,
+  handleDelete,
   id,
 }: RenderDialogProps) {
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -45,7 +44,8 @@ export default function RenderDialog({
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={() => {
-              deletedBook(id);
+              handleDelete(id);
+              // deletedBook(id);
               onOpenChange(false);
             }}
           >

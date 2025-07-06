@@ -14,20 +14,25 @@ import { useBorrowBookMutation } from "@/Redux/api/baseApi";
 import { toast } from "sonner";
 
 export default function RenderBorrowForm() {
-  const form = useForm({
+  type borrowTypes = {
+    quantity: number;
+    dueDate: string;
+  };
+
+  const form = useForm<borrowTypes>({
     shouldUnregister: true,
   });
 
   const location = useLocation();
   const selectedBorrowBook = location?.state?.book;
-  console.log(selectedBorrowBook);
+  // console.log(selectedBorrowBook);
   const navigate = useNavigate();
 
   // borrow create hook
-  const [BorrowBook, { data: borrowedBookData }] = useBorrowBookMutation();
+  const [BorrowBook] = useBorrowBookMutation();
 
   // handle korte hobe jate input faka diye submit na hoy warning dekhabo to fill the form !!important
-  const onSubmitBorrow = async (data) => {
+  const onSubmitBorrow = async (data: borrowTypes) => {
     if (data.quantity > selectedBorrowBook.copies) {
       toast("❌ Quantity cannot exceed available copies");
       return;
@@ -40,7 +45,6 @@ export default function RenderBorrowForm() {
 
     try {
       const response = await BorrowBook(BorrowBookRequest).unwrap();
-      console.log("Success message:", response.message);
       toast("✅ Book borrowed successfully", {
         description: response.message,
         action: {
@@ -50,9 +54,9 @@ export default function RenderBorrowForm() {
       });
       navigate("/borrow-summary");
     } catch (error) {
-      console.error("Error borrowing book:", error);
+      const err = error as Error;
       toast("❌ Failed to borrow book", {
-        description: error?.message || "Something went wrong",
+        description: err?.message || "Something went wrong",
       });
     }
   };

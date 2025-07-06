@@ -7,7 +7,25 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
-export default function RenderBorrowBooks({ Borrowbooks }) {
+type propsTypes = {
+  success: boolean;
+  message: string;
+  data: [];
+};
+type borrowBook = {
+  _id: string;
+  book: {
+    title: string;
+    isbn: string;
+  };
+  totalQuantity: number;
+};
+
+export default function RenderBorrowBooks({
+  Borrowbooks,
+}: {
+  Borrowbooks: propsTypes;
+}) {
   return (
     <div className="mx-5 my-5">
       <Table className="">
@@ -22,7 +40,7 @@ export default function RenderBorrowBooks({ Borrowbooks }) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {Borrowbooks?.data.map((borrowBook, index) => (
+          {Borrowbooks?.data.map((borrowBook: borrowBook, index) => (
             <TableRow key={borrowBook._id} className="text-center">
               <TableCell className="font-medium border text-center">
                 {index + 1}

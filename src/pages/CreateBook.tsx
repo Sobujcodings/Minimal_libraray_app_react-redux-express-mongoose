@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Form,
   FormField,
@@ -20,30 +20,35 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
 export default function CreateBook() {
   const [formData, setformData] = useState(null);
-  const defaultValue = {
+  type createData = {
+    title: string;
+    author: string;
+    genre: string;
+    isbn: number | undefined;
+    description: string;
+    copies: number | undefined;
+  };
+  const defaultValue: createData = {
     title: "",
     author: "",
     genre: "",
-    isbn: "",
+    isbn: undefined,
     description: "",
-    copies: "",
+    copies: undefined,
   };
-  const form = useForm({
-    defaultValues: defaultValue,
-  });
+
+
+  const form = useForm<createData>({});
   const editId = useParams();
   const navigate = useNavigate();
 
   const location = useLocation();
   const editedBookData = location.state?.book;
-  // console.log(editedBookData);
 
   useEffect(() => {
     if (editedBookData) {
@@ -54,18 +59,15 @@ export default function CreateBook() {
     }
   }, [editedBookData, location.pathname]);
 
-  const [
-    createBooks,
-    { data: createdBookData, isError: createdError, isLoading: createdLoading },
-  ] = useCreateBooksMutation();
-
-  const [
-    updatedBooks,
-    { data: updatedBookData, isError: updatedError, isLoading: updatedLoading },
-  ] = useUpdateBookMutation();
+  // const [
+  //   createBooks,
+  //   { data: createdBookData, isError: createdError, isLoading: createdLoading },
+  // ] = useCreateBooksMutation();
+  const [createBooks] = useCreateBooksMutation();
+  const [updatedBooks] = useUpdateBookMutation();
 
   // post & update book
-  const onSubmit = async (data) => {
+  const onSubmit = async (data: createData) => {
     if (formData) {
       try {
         const response = await updatedBooks({
@@ -82,9 +84,9 @@ export default function CreateBook() {
         });
         navigate("/books");
       } catch (error) {
-        console.log(error);
+        const err = error as Error;
         toast("❌ Failed to update book", {
-          description: error?.data?.message || "Something went wrong",
+          description: err?.message || "Something went wrong",
         });
       }
     } else {
@@ -99,9 +101,9 @@ export default function CreateBook() {
         });
         form.reset();
       } catch (error) {
-        console.log(error);
+        const err = error as Error;
         toast("❌ Failed to create book", {
-          description: error?.data?.message || "Something went wrong",
+          description: err?.message || "Something went wrong",
         });
       }
     }
@@ -195,17 +197,6 @@ export default function CreateBook() {
                         ))}
                       </DropdownMenuContent>
                     </DropdownMenu>
-
-                    {/* <Input
-                      type="text"
-                      placeholder="Genre"
-                      {...field}
-                      onKeyDown={(e) => {
-                        if (/\d/.test(e.key)) {
-                          e.preventDefault();
-                        }
-                    />
-                    }} */}
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -262,7 +253,7 @@ export default function CreateBook() {
                 </FormItem>
               )}
             />
-            <Button className="mt-1" type="submit">
+            <Button className="mt-1 w-full" type="submit">
               Submit
             </Button>
             {/* {defaultValues ? "Update" : "Submit"} */}
